@@ -1,7 +1,7 @@
 # symfony project files
 cache/*
 log/*
-web/uploads/statistics_pages*
+web/uploads/statistic_pages/*
 
 # IDE-specific files
 nbproject/

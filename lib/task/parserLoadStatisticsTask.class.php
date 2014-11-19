@@ -34,7 +34,7 @@ class parserLoadstatisticsTask extends sfBaseTask
   protected function execute($arguments = array(), $options = array())
   {
       
-      $this->prepareConnection();
+    $this->prepareConnection();
 
     $tStart = time();
     echo "start\n";
@@ -46,10 +46,6 @@ class parserLoadstatisticsTask extends sfBaseTask
 
     $dateParser = new DateParser();
     $partsOfFileNames = $dateParser->buildPartsOfFileNames($arguments['begin'], $arguments['end']);
-//    var_dump(__LINE__ . __FILE__);
-//    $c = Doctrine_Manager::getInstance()->getCurrentConnection();
-//    var_dump($c); die(__FILE__);
-//    $statistics = Doctrine_Core::getTable('statistics');
 
     $db = new DbManager();
     $db->clearTable('statistics');
