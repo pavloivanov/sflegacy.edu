@@ -5,6 +5,7 @@ all:
   doctrine:
     class: sfDoctrineDatabase
     param:
-      dsn:      mysql:host=localhost;dbname=development
-      username: root
-      password: 
+      dsn: 'mysql:host=10.25.9.208;dbname=pivanov_portal_usage'
+      username: epam
+      password: malls4you
+
