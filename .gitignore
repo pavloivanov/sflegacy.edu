@@ -1,0 +1,6 @@
+# symfony project files
+cache/*
+log/*
+
+# IDE-specific files
+nbproject/
