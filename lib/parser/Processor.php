@@ -11,7 +11,7 @@ class Processor {
     /**
      * @propetry object $dbManager
      */
-    protected $dbManager;
+    protected $doctrineConnection;
 
 
     /**
@@ -22,12 +22,11 @@ class Processor {
 
     /**
      * @param object @parser
-     * @param object $dbManager
      */
-    public function __construct(Parser $parser, $dbManager)
+    public function __construct(Parser $parser)
     {
         $this->parser = $parser;
-        $this->dbManager = $dbManager;
+        $this->doctrineConnection = Doctrine_Manager::getInstance()->getCurrentConnection();
     }
 
 
@@ -44,31 +43,52 @@ class Processor {
     }
 
 
-    /**
-     * @param string $dataRow
-     */
     protected function saveToDb()
     {
         try {
-            $this->dbManager->beginTransaction();
-            $this->dbManager->upsert('statistics', $this->data);
+            $this->doctrineConnection->beginTransaction();
+            $this->upsert('statistics');
             $this->data = array();
-            $this->dbManager->commit();
+            $this->doctrineConnection->commit();
         } catch (Exception $e) {
-            $this->dbManager->rollBack();
+            $this->doctrineConnection->rollback();
             echo 'Caught exception: ' . $e->getMessage() . "\n";
-            exit;
-        }
-        
-        
+            exit (1);
+        }  
     }
-
+    
 
     protected function addToBatch($dataRow)
     {
         $this->data[] = $dataRow;
         if (count($this->data) >= 500) {
             $this->saveToDb($this->data);
+        }
+    }
+    
+    
+    protected function upsert($table) {
+        $sql = 'INSERT INTO ' . $table . ' (hits, url) VALUES ';
+        $insertQuery = array();
+        $insertData = array();
+        $n = 0;
+        foreach ($this->data as $row) {
+            $insertQuery[] = '(:hits' . $n . ', :url' . $n . ')';
+            $insertData['hits' . $n] = $row['hits'];
+            $insertData['url' . $n] = $row['url'];
+            $n++;
+        }
+
+        if (!empty($insertQuery)) {
+            $sql .= implode(', ', $insertQuery);
+            $sql .= "ON DUPLICATE KEY UPDATE hits = hits + VALUES(hits)";
+            $result = $this->doctrineConnection->execute($sql, $insertData);
+
+            if (!$result) {
+                throw new Exception("Error Data wasn't inserted");
+            }
+
+            return $result;
         }
     }
 

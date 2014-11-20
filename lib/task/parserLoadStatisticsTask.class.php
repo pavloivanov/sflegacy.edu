@@ -35,6 +35,8 @@ class parserLoadstatisticsTask extends sfBaseTask
   {
       
     $this->prepareConnection();
+        
+    Doctrine::getTable('statistics')->createQuery()->delete()->execute();
 
     $tStart = time();
     echo "start\n";
@@ -45,15 +47,12 @@ class parserLoadstatisticsTask extends sfBaseTask
     //     );
 
     $dateParser = new DateParser();
-    $partsOfFileNames = $dateParser->buildPartsOfFileNames($arguments['begin'], $arguments['end']);
-
-    $db = new DbManager();
-    $db->clearTable('statistics');
+    $partsOfFileNames = $dateParser->buildPartsOfFileNames($arguments['begin'], $arguments['end']);    
 
     foreach ($partsOfFileNames as $partOfFileName) {
         try {
             $parser = new Parser($partOfFileName);
-            $processor = new Processor($parser, $db);
+            $processor = new Processor($parser, 'statistics');
             $processor->saveData();
             unset($processor);
             echo "parsed rows " . $parser->getFileName() . "\n";
@@ -67,8 +66,5 @@ class parserLoadstatisticsTask extends sfBaseTask
     echo "finished\n";
     echo "elapsed " . $elapsedTime . " S\n";
   }
-
-
-  
 
 }
